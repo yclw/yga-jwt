@@ -1,6 +1,6 @@
 # YGA-JWT
 
-一个基于 Go 语言的 JWT（JSON Web Token）处理库，提供简单易用的访问令牌和刷新令牌功能。
+一个基于 Go 语言与golang-jwt库的 JWT（JSON Web Token）处理工具库，支持自定义用户身份信息，提供简单易用的访问令牌和刷新令牌功能示例。
 
 ## 特性
 
