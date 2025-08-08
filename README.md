@@ -1,70 +1,137 @@
 # YGA-JWT
 
-一个基于 Go 语言与golang-jwt库的 JWT（JSON Web Token）处理工具库，支持自定义用户身份信息，提供简单易用的访问令牌和刷新令牌功能示例。
+[English](README.md) | [中文](README.zh.md)
 
-## 特性
+A JWT (JSON Web Token) processing utility library based on Go and the golang-jwt library, supporting custom user identity information with simple and easy-to-use access token and refresh token functionality examples.
 
-- **JWT 令牌生成与验证**：支持创建和验证 JWT 令牌
-- **灵活配置**：可自定义密钥、过期时间、签发人等配置
-- **自定义声明**：支持自定义用户身份信息
-- **反射机制**：自动处理 RegisteredClaims 字段设置
+## Features
 
-## 安装
+- **JWT Token Generation & Verification**: Support for creating and verifying JWT tokens
+- **Flexible Configuration**: Customizable secret key, expiration time, issuer, and other configurations
+- **Custom Claims**: Support for custom user identity information
+- **Reflection Mechanism**: Automatic handling of RegisteredClaims field settings
+
+## Installation
 
 ```bash
 go get github.com/yclw/yga-jwt
 ```
 
-## 依赖
+## Dependencies
 
 - Go 1.24.2+
 - github.com/golang-jwt/jwt/v5
 
-## 使用
+## Quick Start
 
-使用请参考：[example](https://github.com/yclw/yga-jwt/blob/main/example)
+### Import
 
-在项目[ygpay](https://github.com/yclw/ygpay)的token中使用
-
-## 项目结构
-
+```go
+import (
+ "github.com/yclw/yga-jwt/token"
+ "github.com/golang-jwt/jwt/v5"
+)
 ```
+
+### Custom Token Claims
+
+```go
+type MyIdentity struct {
+    Uid      string `json:"uid"`
+    RoleId   int64  `json:"roleId"`
+    Username string `json:"username"`
+}
+
+type MyClaims struct {
+    Identity MyIdentity `json:"Identity"`
+    jwt.RegisteredClaims
+}
+```
+
+### Create JWT Handler
+
+```go
+conf := &token.TokenConfig{
+    SecretKey: "yoursecretkey", // Secret key
+    Issuer:    "yourissuer",    // Issuer
+    Audience:  "youraudience",  // Audience
+    Expires:   3600,            // Expiration duration (seconds)
+}
+handler := token.NewJwtHandler(conf, jwt.SigningMethodHS256, &MyClaims{})
+```
+
+### Generate Token
+
+```go
+ctx := context.Background()
+
+identity := MyIdentity{
+    Uid:      "1",
+    RoleId:   1,
+    Username: "admin",
+}
+
+claims := &MyClaims{
+    Identity: identity,
+}
+
+tokenStr, expires, err := handler.CreateToken(ctx, claims)
+```
+
+### Verify/Parse Token
+
+```go
+ok, claims, err := handler.VerifyToken(ctx, tokenStr)
+if err != nil || !ok {
+    // Handle error
+    return
+}
+
+identity := claims.(*MyClaims).Identity
+```
+
+For usage examples, please refer to: [example](https://github.com/yclw/yga-jwt/blob/main/example)
+Used in the token module of project [ygpay](https://github.com/yclw/ygpay)
+
+## Project Structure
+
+```text
 yga-jwt/
 ├── token/
-│   └── jwt.go          # 核心 JWT 处理逻辑
+│   └── jwt.go          # Core JWT processing logic
 ├── example/
-│   ├── access_token.go # 访问令牌示例实现
-│   └── refresh_token.go# 刷新令牌示例实现
+│   ├── access_token.go # Access token example implementation
+│   └── refresh_token.go# Refresh token example implementation
 ├── go.mod
 ├── go.sum
 └── README.md
 ```
 
-## 核心组件
+## Core Components
 
 ### TokenConfig
 
-令牌配置结构体，包含以下字段：
+Token configuration struct containing the following fields:
 
-- `SecretKey`: 签名密钥
-- `Issuer`: 令牌签发人
-- `Audience`: 令牌受众
-- `Expires`: 过期时间（秒）
-- `MaxRefreshTimes`: 最大刷新次数（配置项）
-- `MultiLogin`: 是否允许多端登录（配置项）
+- `SecretKey`: Signing secret key
+- `Issuer`: Token issuer
+- `Audience`: Token audience
+- `Expires`: Expiration time (seconds)
+- `MaxRefreshTimes`: Maximum refresh times (configuration item)
+- `MultiLogin`: Whether to allow multi-device login (configuration item)
 
 ### JwtHandler
 
-JWT 处理器，提供以下核心方法：
+JWT handler providing the following core methods:
 
-- `CreateToken(ctx, claims)`: 创建 JWT 令牌
-- `VerifyToken(ctx, token)`: 验证 JWT 令牌
-- `GetConfig()`: 获取配置信息
+- `CreateToken(ctx, claims)`: Create JWT token
+- `VerifyToken(ctx, token)`: Verify JWT token
+- `GetConfig()`: Get configuration information
 
-## 许可证
+## License
 
 MIT License
 
-## 贡献
+## Contributing
 
-欢迎提交 Issue 和 Pull Request 来改进这个项目。
+Issues and Pull Requests are welcome to improve this project.
